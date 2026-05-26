@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMOOR — Find a Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #691A09;
+    --bg-dark: #4a1006;
+    --bg-card: rgba(255,255,255,0.07);
+    --bg-card-hover: rgba(255,255,255,0.13);
+    --border: rgba(255,255,255,0.12);
+    --border-hover: rgba(232,180,100,0.6);
+    --gold: #E8B464;
+    --gold-dark: #c8904a;
+    --cream: #F5EAD0;
+    --cream-muted: #c8b090;
+    --text-sub: rgba(245,234,208,0.55);
+    --pill-sig: rgba(232,180,100,0.15);
+    --pill-sig-text: #E8B464;
+    --pill-cafe: rgba(180,220,160,0.15);
+    --pill-cafe-text: #a8d888;
+    --pill-kiosk: rgba(180,200,240,0.15);
+    --pill-kiosk-text: #a8c0e8;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* === HEADER === */
+  .header {
+    text-align: center;
+    padding: 24px 24px 20px;
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: var(--gold);
+    margin: 16px auto 0;
+    opacity: 0.5;
+  }
+
+  .logo-wrap {
+    width: 240px;
+    height: 240px;
+    margin: 0 auto -28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-wrap img {
+    width: 240px;
+    height: 240px;
+    object-fit: contain;
+    mix-blend-mode: lighten;
+  }
+
+  .tagline {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--cream);
+    line-height: 1.3;
+  }
+
+  .subline {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  /* === CITY TABS === */
+  .city-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 24px 20px 0;
+  }
+
+  .city-tab {
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 18px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--cream-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .city-tab:hover, .city-tab.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #1a0a00;
+    font-weight: 500;
+  }
+
+  /* === CITY SECTION === */
+  .city-section {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: none;
+  }
+
+  .city-section.visible { display: block; }
+
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 28px 0 14px;
+  }
+
+  .section-divider-line { flex: 1; height: 0.5px; background: var(--border); }
+
+  .section-divider-label {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+
+  /* === STORE BUTTON === */
+  .store-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+    color: inherit;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .store-btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+  }
+
+  .store-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.25);
+    border: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: -1px;
+  }
+
+  .store-info { flex: 1; min-width: 0; }
+
+  .store-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .store-area {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .store-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+
+  .type-pill {
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .pill-signature { background: var(--pill-sig); color: var(--pill-sig-text); border: 0.5px solid rgba(232,180,100,0.25); }
+  .pill-cafe      { background: var(--pill-cafe); color: var(--pill-cafe-text); border: 0.5px solid rgba(168,216,136,0.25); }
+  .pill-kiosk     { background: var(--pill-kiosk); color: var(--pill-kiosk-text); border: 0.5px solid rgba(168,192,232,0.25); }
+
+  .store-arrow { font-size: 13px; color: var(--border); }
+
+  /* === OVERLAY === */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(30,5,0,0.88);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideUp { from { transform:translateY(24px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+  .popup {
+    background: #3a0e04;
+    border: 0.5px solid rgba(232,180,100,0.2);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 520px;
+    padding: 10px 20px 36px;
+    animation: slideUp 0.25s ease;
+  }
+
+  .popup-handle {
+    width: 36px; height: 4px;
+    background: rgba(232,180,100,0.25);
+    border-radius: 2px;
+    margin: 0 auto 18px;
+  }
+
+  .popup-type { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
+
+  .popup-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--cream);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .popup-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 11px;
+  }
+
+  .popup-row-icon { color: var(--gold); margin-top: 1px; flex-shrink: 0; }
+  .popup-row-icon svg { width: 14px; height: 14px; }
+
+  .popup-row-text {
+    font-size: 12.5px;
+    color: var(--cream-muted);
+    line-height: 1.6;
+  }
+
+  .popup-row-text strong { color: var(--cream); font-weight: 500; }
+
+  .popup-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+  .popup-map {
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 0.5px solid rgba(232,180,100,0.15);
+    background: rgba(0,0,0,0.2);
+    position: relative;
+  }
+
+  .popup-map iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .map-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-sub);
+  }
+
+  .btn-maps {
+    flex: 1;
+    background: var(--gold);
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a0800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+
+  .btn-maps svg { width: 15px; height: 15px; }
+  .btn-maps:hover { background: #f0c878; }
+
+  .btn-close {
+    background: transparent;
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-close:hover { background: rgba(255,255,255,0.07); color: var(--cream); }
+
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  .footer a {
+    color: rgba(245,234,208,0.35);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer a:hover { color: var(--gold); }
+
+  .footer-divider {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(245,234,208,0.2);
+  }
+
+  .footer-phone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(245,234,208,0.35);
+  }
+
+  .footer-phone svg {
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-wrap">
+    <img src="data:image/png;base64,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" alt="SMOOR Logo">
+  </div>
+  <p class="tagline">United by Flavours</p>
+  <h1 class="headline">Find a store near you</h1>
+  <p class="subline">Bean to bar · True couverture chocolate · Since 2015</p>
+</div>
+
+<!-- CITY NAVIGATION -->
+<div class="city-nav">
+  <button class="city-tab active" onclick="showCity('bengaluru', this)">Bengaluru</button>
+  <button class="city-tab" onclick="showCity('mumbai', this)">Mumbai</button>
+  <button class="city-tab" onclick="showCity('pune', this)">Pune</button>
+  <button class="city-tab" onclick="showCity('chennai', this)">Chennai</button>
+</div>
+
+<!-- ===== BENGALURU ===== -->
+<div id="city-bengaluru" class="city-section visible">
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Signature Lounges</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Indiranagar','Signature Lounge','08AM – 03AM','+91 99878 05418','https://goo.gl/maps/6zCfZjH27L2ahLnv6','signature')">
+    <div class="store-icon">In</div>
+    <div class="store-info"><div class="store-name">Indiranagar</div><div class="store-area">HAL 2nd Stage, 100 Feet Road</div></div>
+    <div class="store-right"><span class="type-pill pill-signature">Signature</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Whitefield Lounge','Signature Lounge','08AM – 01AM','+91 97422 94228','https://www.google.co.in/maps/place/Smoor/@12.965752,77.7489732','signature')">
+    <div class="store-icon">Wf</div>
+    <div class="store-info"><div class="store-name">Whitefield</div><div class="store-area">Bengaluru South Taluk</div></div>
+    <div class="store-right"><span class="type-pill pill-signature">Signature</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Lavelle Road','Signature Lounge','08AM – 01AM','+91 99801 41988','https://www.google.com/maps/place/Prestige+Sterling+Square/@12.972532,77.5998309','signature')">
+    <div class="store-icon">Lv</div>
+    <div class="store-info"><div class="store-name">Lavelle Road</div><div class="store-area">Prestige Sterling Square</div></div>
+    <div class="store-right"><span class="type-pill pill-signature">Signature</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Cafés</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Koramangala','Café','08AM – 01AM','+91 97380 76499','https://goo.gl/maps/c7igwPodEeMADyhYA','cafe')">
+    <div class="store-icon">Ko</div>
+    <div class="store-info"><div class="store-name">Koramangala</div><div class="store-area">7th Block, Prestige Pinnacle</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('BEL Road','Café','08AM – 01AM','+91 76761 52414','https://www.google.com/maps/search/No.+70,+Ramaiah+Road,+80ft+Road,+2nd+Block,+RMV+2nd+Stage,+Bangalore','cafe')">
+    <div class="store-icon">Bl</div>
+    <div class="store-info"><div class="store-name">BEL Road</div><div class="store-area">80ft Road, RMV 2nd Stage</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Jayanagar','Café','08AM – 01AM','+91 99166 41515','https://www.google.com/maps/place/12°55%2716.8%22N+77°35%2701.4%22E','cafe')">
+    <div class="store-icon">Jy</div>
+    <div class="store-info"><div class="store-name">Jayanagar</div><div class="store-area">5th Block, Diamond Arcade</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Kamanahalli','Café','08AM – 01AM','+91 81054 11621','https://www.google.com/maps/place/13°01%2718.3%22N+77°38%2724.3%22E','cafe')">
+    <div class="store-icon">Km</div>
+    <div class="store-info"><div class="store-name">Kamanahalli</div><div class="store-area">HRBR Layout 2nd Block, Banaswadi</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Sadashivanagar','Café','08AM – 01AM','+91 78992 12664','https://www.google.com/maps/search/smoor+sadashivanagar','cafe')">
+    <div class="store-icon">Ss</div>
+    <div class="store-info"><div class="store-name">Sadashivanagar</div><div class="store-area">13th Cross, Vishwanatha Krupa</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Kiosks & Mall Stores</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Nexus Mall','Kiosk','8AM – 12AM','+91 80 2206 7901','https://goo.gl/maps/doQcxM1M463sUBNq8','kiosk')">
+    <div class="store-icon">Nx</div>
+    <div class="store-info"><div class="store-name">Nexus Mall</div><div class="store-area">Hosur Road, Koramangala</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Forum Shantiniketan','Kiosk','8AM – 12AM','+91 88670 91296','https://www.google.co.in/maps/place/Forum+Shantiniketan+Mall','kiosk')">
+    <div class="store-icon">Fs</div>
+    <div class="store-info"><div class="store-name">Forum Shantiniketan</div><div class="store-area">Whitefield Main Road</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('1 MG Mall','Kiosk','9:30AM – 9PM','+91 80 2249 6589','https://goo.gl/maps/rzN6cAT82etaCpzeA','kiosk')">
+    <div class="store-icon">1M</div>
+    <div class="store-info"><div class="store-name">1 MG Mall</div><div class="store-area">Trinity Circle, Ulsoor</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Vega City Mall','Kiosk','8AM – 12AM','+91 80679 22345','https://goo.gl/maps/QiueYysQiU7MmagZ7','kiosk')">
+    <div class="store-icon">Vc</div>
+    <div class="store-info"><div class="store-name">Vega City Mall</div><div class="store-area">Bannerghatta Road</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Orion Mall','Kiosk','8AM – 12AM','+91 80 2268 2150','https://goo.gl/maps/t2DGuJKnFPQ54kYw7','kiosk')">
+    <div class="store-icon">Or</div>
+    <div class="store-info"><div class="store-name">Orion Mall</div><div class="store-area">Dr. Rajkumar Road, Malleshwaram</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Bhartiya City Mall','Kiosk','8AM – 12AM','+91 90352 38029','https://www.google.com/maps/place/Bhartiya+Mall+Of+Bengaluru','kiosk')">
+    <div class="store-icon">Bh</div>
+    <div class="store-info"><div class="store-name">Bhartiya City Mall</div><div class="store-area">Thanisandra Main Road</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Forum South Mall','Kiosk','8AM – 12AM','+91 63624 34734','https://www.google.com/maps/place/Forum+South+Bengaluru','kiosk')">
+    <div class="store-icon">Fm</div>
+    <div class="store-info"><div class="store-name">Forum South Mall</div><div class="store-area">Bannerghatta Road</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Airport</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('BLR Airport T2 — International','Bakery Café','12AM – 12PM','+91 98866 61467','https://www.google.com/maps/place/Terminal+2,+Bengaluru','cafe')">
+    <div class="store-icon">T2</div>
+    <div class="store-info"><div class="store-name">Airport T2 International</div><div class="store-area">Kempegowda International Airport</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+  <button class="store-btn" onclick="open_store('BLR Airport Terminal 1','Kiosk','12AM – 12PM','+91 97408 93801','https://www.google.com/maps/place/Terminal+2,+Bengaluru','kiosk')">
+    <div class="store-icon">T1</div>
+    <div class="store-info"><div class="store-name">Airport Terminal 1</div><div class="store-area">Kempegowda International Airport</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Experience Centre</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('SMOOR Experience Centre','Chocolate Factory & Tour','9AM – 11PM · Tours: Sat–Sun only','+91 79960 20340','https://www.google.com/maps/place/SMOOR+Experience+Centre','cafe')">
+    <div class="store-icon">★</div>
+    <div class="store-info"><div class="store-name">SMOOR Experience Centre</div><div class="store-area">Avalahalli Village, Bidarahalli</div></div>
+    <div class="store-right"><span class="type-pill pill-signature">Special</span><span class="store-arrow">›</span></div>
+  </button>
+
+</div>
+
+<!-- ===== MUMBAI ===== -->
+<div id="city-mumbai" class="city-section">
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Signature Lounge</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Powai','Signature Lounge','08AM – 01AM','+91 93566 48611','https://www.google.com/maps/place/19°07%2713.9%22N+72°54%2732.6%22E','signature')">
+    <div class="store-icon">Pw</div>
+    <div class="store-info"><div class="store-name">Powai</div><div class="store-area">Hiranandani Gardens, Powai</div></div>
+    <div class="store-right"><span class="type-pill pill-signature">Signature</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Cafés</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Bandra','Café','08AM – 03AM','+91 84339 35967','https://www.google.com/maps?q=19.0503792,72.8267113','cafe')">
+    <div class="store-icon">Bd</div>
+    <div class="store-info"><div class="store-name">Bandra</div><div class="store-area">Bandra West</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Versova','Café','8AM – 12AM','+91 97691 24385','https://www.google.com/maps/search/Shop+16A','cafe')">
+    <div class="store-icon">Vs</div>
+    <div class="store-info"><div class="store-name">Versova</div><div class="store-area">Andheri West, JP Road</div></div>
+    <div class="store-right"><span class="type-pill pill-cafe">Café</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Kiosks</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Malad','Kiosk','9AM – 12AM','+91 90040 63032','https://goo.gl/maps/6Lx6Lvy2AmPjNmSS7','kiosk')">
+    <div class="store-icon">Ml</div>
+    <div class="store-info"><div class="store-name">Malad</div><div class="store-area">Inorbit Mall, Malad West</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Viviana Mall','Kiosk','9AM – 11PM','+91 74001 85587','https://www.google.co.in/maps/place/Viviana+Mall','kiosk')">
+    <div class="store-icon">Vv</div>
+    <div class="store-info"><div class="store-name">Viviana Mall</div><div class="store-area">Thane West</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <button class="store-btn" onclick="open_store('Seawoods','Kiosk','9AM – 12AM','+91 74001 93167','https://www.google.co.in/maps/place/Seawoods+Grand+Central+Mall','kiosk')">
+    <div class="store-icon">Sw</div>
+    <div class="store-info"><div class="store-name">Seawoods</div><div class="store-area">Navi Mumbai</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+</div>
+
+<!-- ===== PUNE ===== -->
+<div id="city-pune" class="city-section">
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Signature Lounge</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Koregaon Park','Signature Lounge','08AM – 01AM','+91 85520 22026','https://www.google.com/maps/place/18°32%2711.8%22N+73°53%2754.9%22E','signature')">
+    <div class="store-icon">Kp</div>
+    <div class="store-info"><div class="store-name">Koregaon Park</div><div class="store-area">Koregaon Park, Pune</div></div>
+    <div class="store-right"><span class="type-pill pill-signature">Signature</span><span class="store-arrow">›</span></div>
+  </button>
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Kiosk</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Phoenix Mall Pune','Kiosk','10AM – 11PM','+91 74476 08009','https://www.google.com/maps/search/Unit+No+G%2F8,+Phoenix+Market+City','kiosk')">
+    <div class="store-icon">Ph</div>
+    <div class="store-info"><div class="store-name">Phoenix Market City</div><div class="store-area">Viman Nagar, Pune</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+</div>
+
+<!-- ===== CHENNAI ===== -->
+<div id="city-chennai" class="city-section">
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Kiosk</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <button class="store-btn" onclick="open_store('Express Avenue','Kiosk','10AM – 10PM','+91 74065 67774','https://www.google.com/maps/place/Express+Avenue','kiosk')">
+    <div class="store-icon">Ea</div>
+    <div class="store-info"><div class="store-name">Express Avenue</div><div class="store-area">Whites Road, Royapettah</div></div>
+    <div class="store-right"><span class="type-pill pill-kiosk">Kiosk</span><span class="store-arrow">›</span></div>
+  </button>
+
+</div>
+
+<div style="max-width:520px;margin:0 auto;padding:0 16px;">
+  <div class="footer">
+    <a href="https://smoor.in" target="_blank" rel="noopener">smoor.in</a>
+    <div class="footer-divider"></div>
+    <div class="footer-phone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 17z"/></svg>
+      8822201202
+    </div>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div class="overlay" id="overlay" onclick="close_on_bg(event)">
+  <div class="popup">
+    <div class="popup-handle"></div>
+    <div class="popup-type" id="p-type"></div>
+    <div class="popup-name" id="p-name"></div>
+
+    <div class="popup-map">
+      <div class="map-loading" id="map-loading">Loading map…</div>
+      <iframe id="p-map" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+
+    <div class="popup-row">
+      <div class="popup-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="popup-row-text" id="p-hours"></div>
+    </div>
+
+    <div class="popup-row">
+      <div class="popup-row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 17z"/></svg></div>
+      <div class="popup-row-text" id="p-phone"></div>
+    </div>
+
+    <div class="popup-actions">
+      <a class="btn-maps" id="p-link" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        Open in Google Maps
+      </a>
+      <button class="btn-close" onclick="close_popup()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showCity(city, btn) {
+  document.querySelectorAll('.city-section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('city-' + city).classList.add('visible');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function open_store(name, type, hours, phone, mapsUrl, tier) {
+  document.getElementById('p-name').textContent = name;
+  document.getElementById('p-type').textContent = 'SMOOR ' + type;
+  document.getElementById('p-hours').textContent = hours;
+  document.getElementById('p-phone').textContent = phone;
+  document.getElementById('p-link').href = mapsUrl;
+
+  const mapIframe = document.getElementById('p-map');
+  const mapLoading = document.getElementById('map-loading');
+  mapLoading.style.display = 'flex';
+  mapIframe.style.opacity = '0';
+
+  let embedUrl = '';
+  try {
+    const url = new URL(mapsUrl);
+    const pathname = url.pathname;
+    const fullStr = pathname + url.search;
+
+    // Decimal coords @lat,lng
+    const coordMatch = fullStr.match(/@([-\d.]+),([-\d.]+)/);
+    // ?q= param
+    const qParam = url.searchParams.get('q');
+    // /place/Name or /search/Name in path
+    const placeMatch = pathname.match(/\/maps\/(place|search)\/([^\/\?@]+)/);
+
+    if (coordMatch) {
+      const lat = coordMatch[1], lng = coordMatch[2];
+      embedUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed&hl=en`;
+    } else if (qParam) {
+      embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(qParam)}&z=15&output=embed&hl=en`;
+    } else if (placeMatch) {
+      const query = decodeURIComponent(placeMatch[2]).replace(/\+/g,' ');
+      embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent('SMOOR ' + query)}&z=15&output=embed&hl=en`;
+    } else {
+      embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent('SMOOR ' + name + ' Bengaluru India')}&z=15&output=embed&hl=en`;
+    }
+  } catch(e) {
+    embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent('SMOOR ' + name + ' India')}&z=15&output=embed&hl=en`;
+  }
+
+  mapIframe.onload = function() {
+    mapLoading.style.display = 'none';
+    mapIframe.style.opacity = '1';
+    mapIframe.style.transition = 'opacity 0.3s ease';
+  };
+  mapIframe.src = embedUrl;
+
+  document.getElementById('overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function close_popup() {
+  document.getElementById('overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  // Clear iframe to stop loading when closed
+  document.getElementById('p-map').src = '';
+}
+
+function close_on_bg(e) {
+  if (e.target === document.getElementById('overlay')) close_popup();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') close_popup();
+});
+</script>
+</body>
+</html>
